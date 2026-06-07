@@ -2,6 +2,12 @@
 
 **Watch your Hermes agent work, live, as an animated character in a pixel-art office.**
 
+![Hermes running live in the Pixel Agents office](docs/demo.png)
+
+> Hermes (`nemotron-3-super-120b`) running in the TUI on the left while its
+> character moves through the office on the right — a teammate already seated at
+> the meeting table.
+
 This project makes [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)
 show up inside the [Pixel Agents](https://github.com/pixel-agents-hq/pixel-agents)
 office UI: every Hermes session becomes a character that types when it writes,

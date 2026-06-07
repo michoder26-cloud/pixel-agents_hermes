@@ -1,0 +1,17 @@
+name: pixel_observer
+version: "0.1.0"
+description: "Streams Hermes activity to a running Pixel Agents office UI (pixel-agents-hq/pixel-agents). Enable with `hermes plugins enable pixel_observer`, then run `npx pixel-agents` and open http://127.0.0.1:3100. Optional env: PIXEL_AGENTS_URL, PIXEL_AGENTS_TOKEN."
+author: hermes-agent-pixel
+hooks:
+  - on_session_start
+  - on_session_end
+  - on_session_finalize
+  - pre_llm_call
+  - post_llm_call
+  - pre_tool_call
+  - post_tool_call
+  - post_api_request
+  - pre_approval_request
+  - post_approval_response
+  - subagent_start
+  - subagent_stop

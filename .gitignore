@@ -1,0 +1,18 @@
+# Dependencies & build output
+node_modules/
+dist/
+out/
+*.tsbuildinfo
+.vscode-test/
+
+# Upstream Hermes clone (601 commits behind; not part of this repo).
+# The integration's Hermes side lives in ./hermes-plugin/ instead.
+hermes-agent/
+
+# Logs / OS
+*.log
+.DS_Store
+
+# Local secrets / runtime
+.env
+.env.local

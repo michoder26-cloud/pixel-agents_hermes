@@ -132,6 +132,6 @@ auth + WebSocket), and the plugin is confirmed to load via Hermes' real
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) (MIT)
 - [pixel-agents-hq/pixel-agents](https://github.com/pixel-agents-hq/pixel-agents)
 
-This repository is a private integration layer over those two projects.
+This repository is an integration layer over those two projects.
 
 Made by **AI UNLOCKED**.

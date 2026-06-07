@@ -129,7 +129,18 @@ describe('HermesBridge', () => {
     );
   });
 
-  it('removes the agent (and its teammates) on session end', () => {
+  it('does NOT remove the agent on on_session_end (it fires every turn)', () => {
+    bridge.handleEvent(ev('on_session_start', 'sess-A'));
+    bridge.handleEvent(ev('post_llm_call', 'sess-A'));
+    bridge.handleEvent(ev('on_session_end', 'sess-A')); // per-turn marker, not teardown
+    expect(store.size).toBe(1); // agent persists across turns
+
+    // a second turn reuses the same character
+    bridge.handleEvent(ev('pre_llm_call', 'sess-A'));
+    expect(store.size).toBe(1);
+  });
+
+  it('removes the agent (and its teammates) on session finalize', () => {
     const { removed } = attach(store);
     bridge.handleEvent(ev('on_session_start', 'parent-1'));
     bridge.handleEvent(ev('subagent_start', 'child-1', { parent_session_id: 'parent-1' }));
@@ -138,6 +149,32 @@ describe('HermesBridge', () => {
     bridge.handleEvent(ev('on_session_finalize', 'parent-1'));
     expect(store.size).toBe(0);
     expect(removed).toHaveLength(2); // parent + teammate
+  });
+
+  it('synthesizes a tool start when only post_tool_call fires (no pre_tool_call)', () => {
+    const { broadcasts } = attach(store);
+    bridge.handleEvent(ev('on_session_start', 'sess-A'));
+    const id = [...store.keys()][0];
+    broadcasts.length = 0;
+
+    // Only the completion event arrives — pre_tool_call was skipped by Hermes.
+    bridge.handleEvent(
+      ev('post_tool_call', 'sess-A', { tool_name: 'read_file', tool_call_id: 'p1', args: { path: '/a/b.py' } }),
+    );
+
+    const start = broadcasts.find((m) => m.type === 'agentToolStart');
+    expect(start).toMatchObject({ id, toolId: 'p1', toolName: 'read_file' });
+    expect(broadcasts).toContainEqual({ type: 'agentToolDone', id, toolId: 'p1' });
+  });
+
+  it('does not double-start a tool that already had pre_tool_call', () => {
+    const { broadcasts } = attach(store);
+    bridge.handleEvent(ev('on_session_start', 'sess-A'));
+    bridge.handleEvent(ev('pre_tool_call', 'sess-A', { tool_name: 'terminal', tool_call_id: 'p1' }));
+    bridge.handleEvent(ev('post_tool_call', 'sess-A', { tool_name: 'terminal', tool_call_id: 'p1' }));
+
+    const starts = broadcasts.filter((m) => m.type === 'agentToolStart' && m.toolId === 'p1');
+    expect(starts).toHaveLength(1); // exactly one start, not two
   });
 
   it('removes only the subagent on subagent_stop', () => {

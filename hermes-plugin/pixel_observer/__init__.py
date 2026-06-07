@@ -165,6 +165,7 @@ def register(ctx) -> None:
     ctx.register_hook("on_session_start", on_session_start)
     ctx.register_hook("on_session_end", on_session_end)
     ctx.register_hook("on_session_finalize", on_session_finalize)
+    ctx.register_hook("on_session_reset", on_session_reset)
     ctx.register_hook("pre_llm_call", on_pre_llm_call)
     ctx.register_hook("post_llm_call", on_post_llm_call)
     ctx.register_hook("pre_tool_call", on_pre_tool_call)
@@ -188,6 +189,11 @@ def on_session_finalize(**kw: Any) -> None:
     _emit("on_session_finalize", kw.get("session_id"))
 
 
+def on_session_reset(**kw: Any) -> None:
+    # Gateway fires this for the OLD session id when a session is reset/expired.
+    _emit("on_session_reset", kw.get("session_id"))
+
+
 def on_pre_llm_call(**kw: Any) -> None:
     _emit("pre_llm_call", kw.get("session_id"), platform=kw.get("platform"))
 
@@ -208,12 +214,15 @@ def on_pre_tool_call(**kw: Any) -> None:
 
 
 def on_post_tool_call(**kw: Any) -> None:
+    # Include tool_name + args so the bridge can synthesize a tool-start if no
+    # pre_tool_call fired for this call (varies by Hermes version/tool path).
     _emit(
         "post_tool_call",
         kw.get("session_id"),
         tool_name=kw.get("tool_name"),
         tool_call_id=kw.get("tool_call_id"),
         status=kw.get("status"),
+        args=kw.get("args"),
     )
 
 

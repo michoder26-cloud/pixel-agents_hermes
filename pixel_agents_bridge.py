@@ -119,15 +119,16 @@ def main():
         # 3. Map events to Claude Code format
         hermes_event = data.get('hook_event_name')
         
-        # We skip 'on_session_end' (which maps to Stop) so the agent characters
-        # stay in the office permanently and don't disappear when a turn finishes!
+        # We map on_session_end to Stop so characters walk to the lounge/couch to rest
+        # rather than disappearing completely (which SessionEnd does).
         mapping = {
             'on_session_start': 'SessionStart',
             'pre_tool_call': 'PreToolUse',
             'post_tool_call': 'PostToolUse',
             'subagent_start': 'SubagentStart',
             'subagent_stop': 'SubagentStop',
-            'on_session_reset': 'SessionStart'
+            'on_session_reset': 'SessionStart',
+            'on_session_end': 'Stop'
         }
         
         claude_type = mapping.get(hermes_event)

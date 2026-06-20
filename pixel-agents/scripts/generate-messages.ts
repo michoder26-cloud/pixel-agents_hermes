@@ -137,6 +137,13 @@ function exportify(decl: string): string {
 }
 
 function quote(s: string): string {
+  // cmd.exe (the default shell on Windows) does not strip single quotes, so a
+  // single-quoted path becomes a literal part of the filename and prettier/eslint
+  // report "no files matching". Use double quotes there; keep POSIX single-quote
+  // escaping elsewhere.
+  if (process.platform === 'win32') {
+    return `"${s.replace(/"/g, '\\"')}"`;
+  }
   return `'${s.replace(/'/g, "'\\''")}'`;
 }
 

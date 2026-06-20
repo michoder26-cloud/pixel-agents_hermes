@@ -5,14 +5,40 @@ out/
 *.tsbuildinfo
 .vscode-test/
 
-# Upstream Hermes clone (601 commits behind; not part of this repo).
-# The integration's Hermes side lives in ./hermes-plugin/ instead.
+# Upstream Hermes clone (not part of this repo)
 hermes-agent/
 
 # Logs / OS
 *.log
 .DS_Store
+Thumbs.db
 
-# Local secrets / runtime
+# Local secrets / runtime — NEVER commit
 .env
 .env.local
+.env.*
+server.json
+id_rsa*
+*credentials*
+*password*
+
+# Backup directories with potential secrets
+_backups_*/
+_office_home/
+
+# Claude Code personal settings
+.claude/
+
+# Runtime state
+standalone-state.json
+pixel-agents-layout.json
+
+# Windows launcher scripts (contain local paths)
+start_*.bat
+start_*.ps1
+
+# Old bridge versions at root (moved to bridge/)
+pixel_agents_bridge_v2.py
+
+# VS Code
+.vscode/

@@ -42,3 +42,8 @@ pixel_agents_bridge_v2.py
 
 # VS Code
 .vscode/
+
+# Personal local guide and redundant files
+HOW_TO_USE_TH.md
+pixel-office.service
+

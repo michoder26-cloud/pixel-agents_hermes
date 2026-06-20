@@ -2,6 +2,8 @@
 
 **Watch your Hermes agent work, live, as an animated character in a pixel-art office.**
 
+🇹🇭 **อ่านคู่มือภาษาไทยได้ที่ [README_TH.md](README_TH.md)**
+
 ![Hermes running live in the Pixel Agents office](docs/demo.png)
 
 > Hermes (`nemotron-3-super-120b`) running in the TUI on the left while its
@@ -23,10 +25,24 @@ raises a "waiting" bubble when a turn ends. Hermes and Claude Code can run in th
 
 ---
 
+## 🚀 Quick Setup (1-Command VPS Install)
+
+If you are setting this up on a VPS, run the following command to install, build, configure systemd, and open ports automatically:
+
+```bash
+git clone https://github.com/michoder26-cloud/pixel-agents_hermes.git
+cd pixel-agents_hermes
+bash scripts/install_vps.sh
+```
+
+Once done, open `http://YOUR_VPS_IP:3100` in your browser.
+
+---
+
 ## How it works
 
 ```
-Hermes  (pixel_observer plugin)                 Pixel Agents server (standalone)
+Hermes  (pixel_observer plugin or bridge)       Pixel Agents server (standalone)
   hooks: session / tool / subagent  ──HTTP──▶   POST /api/hooks/hermes  (Bearer token)
   reads ~/.pixel-agents/server.json             └─▶ HermesBridge ─▶ AgentStateStore
   for {port, token}; fire-and-forget                 └─▶ WebSocket ─▶ office UI
@@ -55,31 +71,41 @@ three while reusing everything downstream of the store.
 ## Repository layout
 
 ```
-pixel-agents/                 # Pixel Agents fork (runnable) with the Hermes bridge
-  server/src/hermesBridge.ts          # ★ event → office translation (the core)
-  server/src/providers/hermes/        # ★ Hermes tool metadata + status formatting
-  server/__tests__/hermesBridge.test.ts  # ★ bridge unit tests (11 cases)
-  server/src/cli.ts                   # routes providerId === 'hermes' to the bridge
-  server/src/clientMessageHandler.ts  # unions Hermes tool capabilities into the UI
-  server/src/fileWatcher.ts           # guards Claude scanners from despawning Hermes
-  server/src/providers/index.ts       # registers hermesProvider
-hermes-plugin/
-  pixel_observer/               # ★ the Hermes plugin (copy into ~/.hermes/plugins/)
+pixel-agents_hermes/
+├── pixel-agents/           # Office Server (fork with Hermes bridge)
+│   ├── server/src/
+│   │   ├── hermesBridge.ts         # ★ event → office animation
+│   │   └── providers/hermes/       # ★ metadata of Hermes tools
+│   └── webview-ui/                 # pixel-art UI (React)
+├── hermes-plugin/
+│   └── pixel_observer/             # ★ Hermes plugin (auto-loads)
+├── bridge/
+│   ├── pixel_agents_bridge.py      # ★ Python bridge v2 (recommended)
+│   └── pixel_agents_bridge_legacy.py # Python bridge v1
+├── scripts/
+│   ├── install_vps.sh              # 1-command installer script
+│   ├── install_plugin.sh           # installs plugin only
+│   └── setup_systemd.sh            # sets up systemd service
+├── systemd/
+│   └── pixel-office.service        # systemd template file
+└── docs/
+    ├── demo.png                    # Demo screenshot
+    ├── ARCHITECTURE.md             # In-depth architectural details
+    └── TROUBLESHOOTING.md          # Common issues & fixes
 ```
 
 ★ = files authored for this integration. Everything else under `pixel-agents/`
-is upstream. The upstream `hermes-agent` clone is intentionally **not** committed
-(it's public and was 601 commits behind); only the plugin lives here.
+is upstream.
 
 ---
 
-## Setup
+## Setup (Manual Walkthrough)
 
 ### 1. Run the office (standalone web — no VS Code needed)
 
 ```sh
 cd pixel-agents
-npm install && (cd webview-ui && npm install) && (cd server && npm install)
+npm install --legacy-peer-deps && (cd webview-ui && npm install --legacy-peer-deps) && (cd server && npm install --legacy-peer-deps)
 npm run build
 node dist/cli.js --port 3100
 ```
@@ -88,30 +114,22 @@ Open **http://127.0.0.1:3100** — an empty office.
 
 Startup writes `~/.pixel-agents/server.json` (port + auth token) and installs
 Claude Code hooks into `~/.claude/settings.json` so Claude sessions show up too.
-Turn that off in the UI's Settings if you only want Hermes.
 
-### 2. Install + enable the Hermes plugin
+### 2. Install + enable the Hermes plugin or Python bridge
 
+You can use the plugin or the python bridge (or both):
+
+#### Option A: Plugin (Recommended for CLI/TUI)
 Copy the plugin into your Hermes user-plugins directory, then enable it:
-
 ```sh
 cp -r hermes-plugin/pixel_observer ~/.hermes/plugins/
 hermes plugins enable pixel_observer      # takes effect on the next session
 ```
 
-> Plugin discovery uses `~/.hermes/plugins/` (your real Hermes install), so this
-> works without touching the Hermes package. Override the target with
-> `PIXEL_AGENTS_URL` / `PIXEL_AGENTS_TOKEN` if the server isn't on the default
-> localhost discovery path.
-
-### 3. Run Hermes
-
+#### Option B: Python Bridge (Recommended for Gateway/Telegram)
 ```sh
-hermes        # or the TUI / gateway
+cp bridge/pixel_agents_bridge.py ~/.hermes/pixel_agents_bridge.py
 ```
-
-Start a session and send a message — a character appears in the office and
-animates as Hermes uses tools and delegates subagents.
 
 ---
 
@@ -121,10 +139,6 @@ animates as Hermes uses tools and delegates subagents.
 cd pixel-agents && npm run test:server   # full suite, incl. hermesBridge.test.ts
 ```
 
-The bridge is also verified end-to-end against a live server (HTTP route + bearer
-auth + WebSocket), and the plugin is confirmed to load via Hermes' real
-`PluginManager`.
-
 ---
 
 ## Credits
@@ -132,6 +146,4 @@ auth + WebSocket), and the plugin is confirmed to load via Hermes' real
 - [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) (MIT)
 - [pixel-agents-hq/pixel-agents](https://github.com/pixel-agents-hq/pixel-agents)
 
-This repository is an integration layer over those two projects.
-
-Made by **AI UNLOCKED**.
+Forked and extended by **michoder26-cloud** with automated installers, systemd services, Thai documentation, and bridge scripts.

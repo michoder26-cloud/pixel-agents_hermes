@@ -1,0 +1,18 @@
+[Unit]
+Description=Pixel Agents Office (Hermes bridge) - standalone
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/hermes-agent-pixel/pixel-agents
+ExecStart=/usr/local/bin/node dist/cli.js --host 0.0.0.0 --port 3100
+Restart=always
+RestartSec=5
+Environment=HOME=/root
+Environment=NODE_ENV=production
+StandardOutput=append:/root/pixel-office.log
+StandardError=append:/root/pixel-office.log
+
+[Install]
+WantedBy=multi-user.target

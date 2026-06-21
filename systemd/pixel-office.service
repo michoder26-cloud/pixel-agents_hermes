@@ -7,6 +7,7 @@ Wants=network-online.target
 Type=simple
 WorkingDirectory=/root/hermes-agent-pixel/pixel-agents
 ExecStart=/usr/local/bin/node dist/cli.js --host 0.0.0.0 --port 3100
+ExecStartPost=/usr/local/bin/sync-office-token.sh
 Restart=always
 RestartSec=5
 Environment=HOME=/root
